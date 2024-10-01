@@ -11,12 +11,13 @@ struct node{
     string songName;
     node* prev;
     node* link;
+    node(){
+        prev = link = NULL;
+    }
 };
 node* createNode(string name){
     node* A = new node();
     A->songName = name;
-    A->link = NULL;
-    A->prev = NULL;
 }
 struct songList{
     node* head;
@@ -29,14 +30,18 @@ struct songList{
     }
     void addSong(string name){
         node* newSong = createNode(name);
-        if (head == NULL){
-            head = newSong;
-            tail = head;
-            return;
+        if (head == NULL) {
+            head = newSong; 
+            head->link = head; 
+            head->prev = head; 
+            current = head; 
+        } else {
+            node* tail = head->prev; 
+            tail->link = newSong;
+            newSong->prev = tail; 
+            newSong->link = head; 
+            head->prev = newSong; 
         }
-        newSong->prev = tail;
-        tail->link = head;
-        newSong = tail;
     }
     void playNext(){
         if (head == NULL){
@@ -49,6 +54,7 @@ struct songList{
         else{
             current = current->link;
         }
+        if (current != NULL) cout<<"Playing: "<<current->songName<<endl;
     }
     void playPrev(){
         if (head == NULL){
@@ -61,32 +67,36 @@ struct songList{
         else{
             current = current->prev;
         }
+        if (current != NULL) cout<<"Playing: "<<current->songName<<endl;
     }
     void removeNodeBySongName(string songName) {
-        node* temp = head;
-        while (temp != NULL) {
-            if (temp->songName == songName) {
-                // Neu la node head
-                if (temp == head) {
-                    head = temp->link;
-                    if (head != NULL) {
-                        head->prev = NULL;
-                    }
+        node* tmp = head;
+        while (tmp != NULL) {
+            if (tmp->songName == songName) {
+                //Neu list co 1 node duy nhat
+                if (tmp->link == tmp) {
+                    delete tmp;
+                    head = NULL;
+                    current = NULL;
+                    return;
                 }
-                // Neu la node tail
-                else if (temp == tail) {
-                    tail = temp->prev;
-                    tail->link = NULL;
+                //Neu la node head
+                if (tmp == head) {
+                    head->prev->link = head->link; 
+                    head->link->prev = head->prev; 
+                    head = head->link; 
+                } else {
+                    // Link the previous node to the next node
+                    tmp->prev->link = tmp->link;
+                    tmp->link->prev = tmp->prev;
                 }
-                // Neu la node giua
-                else {
-                    temp->prev->link = temp->link;
-                    temp->link->prev = temp->prev;
+                if (current == tmp) {
+                    current = tmp->link;
                 }
-                delete temp;
+                delete tmp;
                 return;
             }
-            temp = temp->link;
+            tmp = tmp->link;
         }
         cout << "Song not found." << endl;
     }
@@ -97,9 +107,10 @@ struct songList{
             return;
         }
         cout<<"--YOUR CURRENT PLAYLIST--"<<endl;
-        node* tmp = head;
-        int index = 0;
-        while (tmp!=NULL){
+        node* tmp = head->link;
+        int index = 1;
+        cout<<index<<". "<<tmp->prev->songName<<" ";
+        while (tmp != head){
             index++;
             cout<<index<<". "<<tmp->songName<<" ";
             tmp = tmp->link;
@@ -114,13 +125,13 @@ int main(){
     cin >> n;
     string operation, name;
     songList A;
+    cout << "CHOOSE AN OPERATION BELOW BY ENTER THE COMMAND:" << endl
+        << "ADD <song name> to add a song." << endl
+        << "NEXT to play the next song." << endl
+        << "PREV to play the previous song." << endl
+        << "REMOVE <song name> to remove a song." << endl
+        << "DISPLAY to display the current playlist." << endl;
     for (int i = 0; i < n; i++) {
-        cout << "CHOOSE AN OPERATION BELOW BY ENTER THE COMMAND:" << endl
-             << "ADD <song name> to add a song." << endl
-             << "NEXT to play the next song." << endl
-             << "PREV to play the previous song." << endl
-             << "REMOVE <song name> to remove a song." << endl
-             << "DISPLAY to display the current playlist." << endl;
         cin>>operation;
         if (operation=="ADD") {
             cin>>name;
